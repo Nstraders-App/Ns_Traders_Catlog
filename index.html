@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NS_Traders — Product Catalogue</title><meta name="theme-color" content="#0b1f4d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 3L56 11V30C56 45 46 55 32 61C18 55 8 45 8 30V11Z' fill='%231d4ed8'/%3E%3Ctext x='32' y='35' text-anchor='middle' font-family='Arial' font-weight='800' font-size='22' fill='%23fff'%3ENS%3C/text%3E%3Cpath d='M16 43C26 37 38 37 48 43' stroke='%23ef4444' stroke-width='4.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0b1f4d;--blue:#1d4ed8;--red:#dc2626;--m:#64748b}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:#0f172a;background:radial-gradient(circle at 20% 10%,#1d4ed8 0,#0b1f4d 45%,#050d24 100%);overflow:hidden;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;width:520px;height:520px;right:-180px;bottom:-200px;border-radius:50%;background:radial-gradient(circle,#ef4444aa,#dc262600 70%);pointer-events:none}
+button{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:9px 14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 4px 12px #0003}button.s{background:#ffffff22;box-shadow:none;border:1px solid #ffffff33}button.r{background:linear-gradient(135deg,#ef4444,#dc2626)}button:hover{filter:brightness(1.1)}
+input,select,textarea{font:inherit;padding:10px 12px;border:1.5px solid #dbe5f8;border-radius:11px;width:100%;background:#fff;color:#0f172a}label{display:block;font-size:12px;font-weight:600;color:#475569;margin:10px 0 4px}
+.hd{display:flex;align-items:center;gap:12px;padding:10px 16px;height:64px;position:relative;z-index:50;color:#fff;border-bottom:3px solid #ef4444;background:#0b1f4dd9;backdrop-filter:blur(8px)}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}.bw{font-weight:800;font-size:19px;letter-spacing:.3px}.bw i{color:#ef4444;font-style:normal}.brand small{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;opacity:.65}
+.sw{position:relative;flex:1;max-width:380px;margin:0 auto}.sw input{background:#ffffff1f;border:1px solid #ffffff40;color:#fff;border-radius:99px;padding:9px 16px}.sw input::placeholder{color:#cbd8ff}
+#sr{position:absolute;top:44px;left:0;right:0;background:#fff;border-radius:14px;box-shadow:0 18px 40px #0006;overflow:hidden;display:none;color:#0f172a}#sr div{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #eef2fb}#sr div:hover{background:#eaf1ff}#sr small{color:var(--m)}
+.ac{display:flex;gap:6px;flex-shrink:0}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;padding:10px}
+.book{position:relative;perspective:2600px;transition:transform .8s cubic-bezier(.4,.1,.2,1);filter:drop-shadow(0 30px 40px #000a)}
+.leaf{position:absolute;top:0;height:100%;transform-origin:left center;transform-style:preserve-3d;transition:transform .95s cubic-bezier(.45,.05,.25,1),z-index 0s .45s}
+.sp .leaf{left:50%;width:50%}.sg .leaf{left:0;width:100%}.leaf.f{transform:rotateY(-180deg)}
+.sg .leaf.f{opacity:0;pointer-events:none;transition:transform .95s cubic-bezier(.45,.05,.25,1),z-index 0s .45s,opacity .1s .8s}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;background:linear-gradient(135deg,#fff,#f6f9ff)}.face.b{transform:rotateY(180deg)}
+.face.fr::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#0000002e,transparent 9%);pointer-events:none}.face.b::after{content:'';position:absolute;inset:0;background:linear-gradient(270deg,#0000002e,transparent 9%);pointer-events:none}
+.sp .leaf:first-child .face.fr{border-radius:0 12px 12px 0}
+.pg{position:absolute;inset:0;font-size:calc(var(--pw)/24);padding:1.3em 1.5em 1.1em;display:flex;flex-direction:column;gap:.55em}
+.ph{display:flex;justify-content:space-between;font-size:.7em;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--m)}.ph span:first-child{color:var(--red)}
+.im{position:relative;flex:0 0 44%;border-radius:1em;background:linear-gradient(135deg,#eaf1ff,#fff 60%,#fde8e8);border:1px solid #dbe5f8;display:flex;align-items:center;justify-content:center;overflow:hidden}.im img{width:100%;height:100%;object-fit:contain;background:#fff}.ic{font-size:6.2em;filter:drop-shadow(0 .2em .3em #1d4ed855)}
+.pg h2{margin:0;font-family:'Playfair Display',Georgia,serif;font-size:1.65em;line-height:1.15;color:var(--navy);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.co{font-size:.82em;color:var(--m)}.co b{color:var(--blue)}.pr{align-self:flex-start;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;font-weight:800;font-size:1.45em;padding:.2em .8em;border-radius:99px;box-shadow:0 .3em .8em #dc262666}
+.dt{margin:0;padding:0 0 0 1.1em;font-size:.82em;line-height:1.55;color:#334155;overflow:hidden;flex:1}.dt li::marker{color:var(--red)}
+.pf{display:flex;align-items:center;justify-content:space-between;gap:.5em;border-top:1px dashed #cbd8f0;padding-top:.6em;font-size:.75em;color:var(--m)}.pf .bn{display:flex;align-items:center;gap:.4em;font-weight:800;color:var(--navy)}.pf .bn i{color:var(--red);font-style:normal}
+.pf button{font-size:.95em;padding:.45em .8em;border-radius:99px}.eb{position:absolute;top:1.1em;right:3.2em;font-size:.8em;padding:.4em .8em;z-index:3;background:#0b1f4d}
+.cv{background:radial-gradient(circle at 25% 15%,#2563eb,#0b1f4d 60%,#050d24);color:#fff;align-items:center;justify-content:center;text-align:center;gap:.8em}.cv::before{content:'';position:absolute;width:120%;height:46%;left:-10%;bottom:-18%;border-radius:50%;background:linear-gradient(90deg,#ef4444,#b91c1c);opacity:.95}
+.cv>*{position:relative}.cv h1{margin:0;font-family:'Playfair Display',serif;font-size:2.3em}.cv h1 i{color:#ef4444;font-style:normal}.cv .sub{letter-spacing:.35em;font-size:.75em;text-transform:uppercase;color:#cbd8ff}.cv .hint{position:absolute;bottom:1.2em;font-size:.75em;color:#fff;letter-spacing:.2em}
+.ct h3{margin:.2em 0;font-family:'Playfair Display',serif;color:var(--navy);font-size:1.5em}.ct .row{display:flex;justify-content:space-between;align-items:center;padding:.35em .5em;border-radius:.6em;cursor:pointer;font-size:.8em;border-bottom:1px dotted #cbd8f0}.ct .row:hover{background:#eaf1ff}.ct .row b{color:var(--red)}.ct{overflow:hidden}
+.ft{display:flex;align-items:center;justify-content:center;gap:10px;height:62px;padding:8px 14px;color:#fff;position:relative;z-index:40}.ft select{width:auto;max-width:190px;background:#ffffff1f;color:#fff;border:1px solid #ffffff40;border-radius:99px;padding:8px 12px}.ft select option{color:#0f172a}.lb{min-width:112px;text-align:center;font-size:13px;font-weight:600;color:#dbe6ff}
+#modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#050d2499;backdrop-filter:blur(4px);z-index:100;padding:12px}.box{background:#fff;border-radius:20px;padding:20px;width:100%;max-width:520px;max-height:92vh;overflow:auto;box-shadow:0 30px 80px #000a}.box h3{margin:0 0 6px;color:var(--navy)}.box .row{display:flex;gap:8px;margin-top:14px}.box .row button{flex:1}
+#toast{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:200}.t{background:#0b1f4d;color:#fff;padding:10px 18px;border-radius:12px;border-left:4px solid #ef4444;margin-bottom:6px;box-shadow:0 10px 28px #0007;font-size:14px}
+@media(max-width:700px){.sw{max-width:none}.bw{font-size:15px}.brand small,.ac .tx{display:none}.hd{gap:8px;padding:8px 10px}.ft select{max-width:130px}}
+</style></head><body>
+<header class="hd"><div class="brand" id="brand"></div><div class="sw"><input id="q" placeholder="🔍 Search product, company, category…" autocomplete="off"><div id="sr"></div></div><div class="ac" id="ac"></div></header>
+<main class="stage"><div id="book" class="book"></div></main>
+<footer class="ft"><button class="s" id="pv">◀</button><div class="lb" id="lb"></div><button class="s" id="nx">▶</button><select id="cat"></select></footer>
+<div id="modal"></div><div id="toast"></div>
+<script type="module">
+/* ===================== SETTINGS (this file is a separate website: the NS_Traders product catalogue) ===================== */
+const firebaseConfig={apiKey:"AIzaSyCVl3m92sFLjV4YNIsKKupRGFQXdXL9yV4",authDomain:"ns-traders-ef755.firebaseapp.com",projectId:"ns-traders-ef755",storageBucket:"ns-traders-ef755.firebasestorage.app",messagingSenderId:"554257321932",appId:"1:554257321932:web:b045e8096446a387259769"};
+const DOMAIN='installments.app';                       // admin username becomes username@installments.app (or type the full email)
+const CONTACT={whatsapp:'',phone:'',address:''};      // optional: whatsapp like 923001234567 enables the "Enquire" button; phone/address appear on the last page
+/* ========================================================================================================================= */
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,initializeFirestore,persistentLocalCache,doc,getDoc,setDoc,deleteDoc,collection,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app=initializeApp(firebaseConfig),auth=getAuth(app);let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache()})}catch(e){db=getFirestore(app)}
+/* ---- built-in catalogue (every product of the installment system, one page each). Used until the admin saves it to Firebase. ---- */
+const DEF=[['Fans and Cooling','🌀','AC/DC Fan 56 inch=15500|Inverter Fan 30 Watt=18500|Pedestal Fan 24 inch=17500|Bracket Fan 18 inch=14500|Bracket Fan AC/DC 18 inch=16500|Mega Bracket Fan 20 inch=16500|Mega Bracket Fan 24 inch=18500|Ceiling Fan=12000|Room Air Cooler=25000|UPS=30000|Solar Panel=60000|Generator=75000'],
+['Juicers, Blenders and Choppers','🥤','Juicer 3in1 PH770=12500|Juicer 4in1=14500|Blender 2in1=6500|Blender 3in1=7500|Blender Commercial=16500|Food Factory U,B=22500|Chopper Bowl=8500|Chopper 876=13500'],
+['Irons','👔','Iron NS 011=7500|Iron NS 400 Watt=8500|Iron 400 Watt=6500'],['Speakers and Audio','🔊','Speaker 8 inch=12500|Speaker 8+8=15500|Speaker 12 inch=17500|Air Buds=6500|Home Theater=25000'],
+['Mobiles','📱','Mobile Keypad=8500|Mobile Smart=49500'],['Bedding','🛌','Kambal (Blanket)=14500|Mattress=25000'],['Dinner Sets','🍽️','Dinner Set 6 pc=13500|Dinner Set 8 pc=17500'],
+['Electronics','📺','LED TV=45000|Smart LED 43 inch=65000|Laptop=90000|Tablet=40000|Camera=50000'],['Home Appliances','🏠','Washing Machine=31500|Refrigerator=85000|Deep Freezer=70000|Air Conditioner=130000|Microwave Oven=28000|Water Dispenser=30000|Geyser=25000|Vacuum Cleaner=22000'],
+['Furniture','🛋️','Sofa Set=70000|Double Bed=55000|Dining Table=60000|Wardrobe=45000|Dressing Table=25000|Study Table=12000'],['Kitchen','🍳','Cooking Range=30000|Gas Stove=9000|Rice Cooker=7000|Gas Cylinder Set=12000'],
+['Vehicles','🏍️','Motorcycle=180000|Electric Bike=150000|Bicycle=25000'],['Jewellery and Others','💍','Gold Set=150000|Sewing Machine=20000|Wall Clock=5000']];
+const DEFAULTS=[];let k=0;DEF.forEach(([c,ic,s])=>s.split('|').forEach(x=>{const[n,p]=x.split('=');DEFAULTS.push({id:'d'+(k),name:n,company:'',price:+p,category:c,icon:ic,details:'',order:k++,hasImg:false})}));
+/* ---- helpers ---- */
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),fmt=n=>Math.round(n).toLocaleString('en-US');
+const toast=m=>{const t=document.createElement('div');t.className='t';t.textContent=m;$('#toast').appendChild(t);setTimeout(()=>t.remove(),2800)};
+const LOGO=w=>`<svg width="${w}" height="${w}" viewBox="0 0 64 64" style="flex-shrink:0"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient></defs><path d="M32 3L56 11V30C56 45 46 55 32 61C18 55 8 45 8 30V11Z" fill="url(#lg)"/><path d="M32 3L56 11V30C56 45 46 55 32 61C18 55 8 45 8 30V11Z" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.5"/><text x="32" y="35" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="22" fill="#fff" letter-spacing="-1">NS</text><path d="M16 43C26 37 38 37 48 43" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round" fill="none"/></svg>`;
+$('#brand').innerHTML=`${LOGO(38)}<div><div class="bw">NS<i>_</i>Traders</div><small>Product Catalogue</small></div>`;
+/* ---- state ---- */
+let FB=[],fbLoaded=false,isAdmin=false,cur=0,N=0,spread=true,P=[],pageProd=[],pageOf={},cats=[],list=[];const IMG={};
+const products=()=>(fbLoaded&&FB.length?FB:DEFAULTS).slice().sort((a,b)=>(a.order??0)-(b.order??0));
+/* ---- pages ---- */
+const cover=()=>`<div class="pg cv">${LOGO(Math.round(innerWidth<900?110:130))}<h1>NS<i>_</i>Traders</h1><div class="sub">Product Catalogue</div><div class="sub" style="letter-spacing:.2em">${new Date().getFullYear()}</div><div class="hint">TAP OR SWIPE TO OPEN ›</div></div>`;
+const contents=()=>`<div class="pg ct"><h3>Contents</h3><div style="font-size:.7em;color:var(--m);margin-bottom:.3em">Tap a category to jump</div>${cats.map(c=>`<div class="row" onclick="goPage(${c.page})"><span>${c.icon} ${esc(c.name)}</span><b>${c.n} · p.${c.page+1}</b></div>`).join('')}</div>`;
+const blank=()=>`<div class="pg" style="align-items:center;justify-content:center;opacity:.5">${LOGO(60)}</div>`;
+const thanks=()=>`<div class="pg cv"><h1 style="font-size:1.9em">Thank you</h1><div class="sub">for choosing NS<i style="color:#ef4444;font-style:normal">_</i>Traders</div><div style="font-size:.85em;line-height:1.8;position:relative">${CONTACT.phone?'📞 '+esc(CONTACT.phone)+'<br>':''}${CONTACT.address?'📍 '+esc(CONTACT.address):''}</div></div>`;
+function details(p){const d=(p.details||'').split('\n').map(x=>x.trim()).filter(Boolean);return(d.length?d:['Category: '+p.category,'Model: '+p.name]).map(x=>`<li>${esc(x)}</li>`).join('')}
+const prodPage=(p,n)=>`<div class="pg">${isAdmin?`<button class="eb" onclick="editP('${p.id}')">✏️ Edit</button>`:''}<div class="ph"><span>${esc(p.category)}</span><span>${n}</span></div><div class="im" data-id="${p.id}">${IMG[p.id]?`<img src="${IMG[p.id]}" alt="${esc(p.name)}">`:`<div class="ic">${p.icon||'📦'}</div>`}</div><h2>${esc(p.name)}</h2>${p.company?`<div class="co">by <b>${esc(p.company)}</b></div>`:isAdmin?'<div class="co">Company not set</div>':''}<div class="pr">Rs. ${fmt(p.price)}</div><ul class="dt">${details(p)}</ul><div class="pf"><div class="bn">${LOGO(18)}NS<i>_</i>Traders</div><div style="display:flex;gap:.4em"><button class="s" style="background:#eaf1ff;color:#1e3a8a;border-color:#cbd8f0" onclick="shareP('${p.id}')">📤 Share</button>${CONTACT.whatsapp?`<button class="r" onclick="enq('${p.id}')">💬 Enquire</button>`:''}</div></div></div>`;
+/* ---- book engine (CSS 3D page flip; 2-page spread on desktop, single page on phones) ---- */
+function size(){const W=innerWidth,H=innerHeight,avH=H-64-62-24,sp=W>=900;let pw=sp?Math.min((W-90)/2,avH*.72):Math.min(W-20,avH*.72);return{pw:Math.floor(pw),ph:Math.floor(pw/.72),sp}}
+function build(keepPage){const z=size();spread=z.sp;list=products();cats=[];pageProd=[];pageOf={};const body=[];
+list.forEach(p=>{let c=cats.find(x=>x.name==p.category);if(!c){c={name:p.category,icon:p.icon||'📦',n:0,page:2+body.length};cats.push(c)}c.n++;pageOf[p.id]=2+body.length;body.push(p)});
+P=[cover(),contents(),...body.map((p,i)=>prodPage(p,3+i)),thanks()];pageProd=[null,null,...body,null];if(spread&&P.length%2){P.splice(P.length-1,0,blank());pageProd.splice(pageProd.length-1,0,null)}
+const per=spread?2:1;let h='';N=0;for(let i=0;i<P.length;i+=per){h+=`<div class="leaf"><div class="face fr">${P[i]}</div><div class="face b">${per==2?P[i+1]:''}</div></div>`;N++}
+const b=$('#book');b.className='book '+(spread?'sp':'sg');b.style.setProperty('--pw',z.pw+'px');b.style.width=(spread?z.pw*2:z.pw)+'px';b.style.height=z.ph+'px';b.innerHTML=h;
+const maxCur=spread?N:N-1;cur=Math.max(0,Math.min(maxCur,keepPage==null?cur:spread?Math.ceil(keepPage/2):keepPage));apply();
+$('#cat').innerHTML='<option value="">Jump to category…</option>'+cats.map(c=>`<option value="${c.page}">${c.icon} ${esc(c.name)}</option>`).join('')}
+function apply(){const ls=document.querySelectorAll('.leaf');ls.forEach((l,i)=>{const f=i<cur;l.classList.toggle('f',f);l.style.zIndex=f?i:N-i});
+$('#book').style.transform=spread?(cur==0?'translateX(-25%)':cur==N?'translateX(25%)':''):'';
+const a=spread?Math.max(1,2*cur):cur+1,t=P.length;$('#lb').textContent=spread&&cur>0&&cur<N?`Pages ${a}–${a+1} of ${t}`:`Page ${a} of ${t}`;
+const id=curId();if(id)history.replaceState(null,'','#i='+id);loadNear()}
+const maxCur=()=>spread?N:N-1,curId=()=>{const p=spread?(cur==0?1:2*cur):cur;const q=pageProd[spread&&cur>0?2*cur:p];return q?q.id:''};
+function flip(d){const n=Math.max(0,Math.min(maxCur(),cur+d));if(n!=cur){cur=n;apply()}}
+window.goPage=p=>{const t=spread?Math.ceil(p/2):p,n=Math.max(0,Math.min(maxCur(),t)),ls=[...document.querySelectorAll('.leaf')];if(n==cur)return;const lo=Math.min(n,cur),hi=Math.max(n,cur);ls.forEach((l,i)=>{if(i>=lo&&i<hi)l.style.transitionDelay=(Math.min(i-lo,14)*45)+'ms,'+(Math.min(i-lo,14)*45+450)+'ms'});cur=n;apply();setTimeout(()=>ls.forEach(l=>l.style.transitionDelay=''),1700)};
+/* ---- images (stored in Firestore as small compressed pictures, loaded only for pages near the one being read) ---- */
+function setImg(id){document.querySelectorAll(`.im[data-id="${id}"]`).forEach(e=>e.innerHTML=`<img src="${IMG[id]}" alt="">`)}
+function loadNear(){const lo=(spread?2*cur-1:cur)-2,hi=(spread?2*cur:cur)+4;for(let i=Math.max(0,lo);i<=Math.min(pageProd.length-1,hi);i++){const p=pageProd[i];if(p&&p.hasImg&&!IMG[p.id]&&!p._l){p._l=1;getDoc(doc(db,'catalogImages',p.id)).then(s=>{if(s.exists()){IMG[p.id]=s.data().data;setImg(p.id)}}).catch(()=>{p._l=0})}}}
+/* ---- navigation: buttons, keys, swipe, click, search ---- */
+$('#nx').onclick=()=>flip(1);$('#pv').onclick=()=>flip(-1);$('#cat').onchange=e=>{if(e.target.value!=='')goPage(+e.target.value);e.target.value=''};
+addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;if(e.key=='ArrowRight')flip(1);if(e.key=='ArrowLeft')flip(-1)});
+let sx=null;$('#book').addEventListener('pointerdown',e=>{sx=e.clientX});
+$('#book').addEventListener('pointerup',e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;if(Math.abs(dx)>40){flip(dx<0?1:-1);return}if(e.target.closest('button,a,input,.row'))return;const r=$('#book').getBoundingClientRect(),x=(e.clientX-r.left)/r.width;flip(x>(spread?.5:.4)?1:-1)});
+$('#q').oninput=e=>{const v=e.target.value.trim().toLowerCase(),box=$('#sr');if(!v){box.style.display='none';return}const m=list.filter(p=>(p.name+' '+p.company+' '+p.category).toLowerCase().includes(v)).slice(0,8);box.innerHTML=m.map(p=>`<div onclick="goPage(${pageOf[p.id]});$('#sr').style.display='none';$('#q').value=''">${p.icon||'📦'} <b>${esc(p.name)}</b> <small>${esc(p.category)} · Rs. ${fmt(p.price)}</small></div>`).join('')||'<div>No product found</div>';box.style.display='block'};
+document.addEventListener('click',e=>{if(!e.target.closest('.sw'))$('#sr').style.display='none'});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>build(spread?2*cur:cur),250)});
+window.$=$;
+/* ---- share / enquire ---- */
+const link=id=>location.origin+location.pathname+'#i='+id;
+window.shareP=id=>{const p=list.find(x=>x.id==id),t=`${p.name} — Rs. ${fmt(p.price)} (NS_Traders)`;if(navigator.share)navigator.share({title:p.name,text:t,url:link(id)}).catch(()=>{});else{navigator.clipboard&&navigator.clipboard.writeText(t+' '+link(id));toast('Link copied')}};
+window.enq=id=>{const p=list.find(x=>x.id==id);open('https://wa.me/'+CONTACT.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(`Assalam o Alaikum, I want to know about: ${p.name} (Rs. ${fmt(p.price)}) ${link(id)}`),'_blank')};
+/* ---- admin (same admin account as the installment system; only admin can change the catalogue) ---- */
+const M=h=>{const m=$('#modal');m.innerHTML=`<div class="box">${h}</div>`;m.style.display='flex'};window.closeM=()=>{$('#modal').style.display='none'};
+function top(){$('#ac').innerHTML=isAdmin?`<button class="s" onclick="addP()">➕<span class="tx"> Add</span></button>${fbLoaded&&FB.length?'':'<button class="r" onclick="seed()">💾<span class="tx"> Save catalogue</span></button>'}<button class="s" onclick="logout()">🔓<span class="tx"> Logout</span></button>`:`<button class="s" onclick="loginForm()">🔐<span class="tx"> Admin</span></button>`}
+window.loginForm=()=>M(`<h3>🔐 Admin login</h3><label>Username</label><input id="lu" autocomplete="username"><label>Password</label><input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"><div class="row"><button class="s" style="background:#eef2fb;color:#1e3a8a;border:0" onclick="closeM()">Cancel</button><button onclick="doLogin()">Login</button></div>`);
+window.doLogin=async()=>{const u=$('#lu').value.trim(),p=$('#lp').value;if(!u||!p)return toast('Enter username and password');try{const c=await signInWithEmailAndPassword(auth,u.includes('@')?u:u.toLowerCase()+'@'+DOMAIN,p),s=await getDoc(doc(db,'users',c.user.uid));if(!s.exists()||s.data().role!=='admin'){await signOut(auth);return toast('This account is not an admin')}closeM();toast('Admin mode on')}catch(e){toast('Login failed: '+(e.code||e.message))}};
+window.logout=()=>signOut(auth);
+onAuthStateChanged(auth,async u=>{isAdmin=false;if(u){try{const s=await getDoc(doc(db,'users',u.uid));isAdmin=s.exists()&&s.data().role==='admin'}catch(e){}}top();build(spread?2*cur:cur)});
+window.seed=async()=>{if(!isAdmin)return;try{for(let i=0;i<DEFAULTS.length;i+=400){const b=writeBatch(db);DEFAULTS.slice(i,i+400).forEach(p=>b.set(doc(db,'catalog',p.id),{...p,updatedAt:Date.now()}));await b.commit()}toast('Catalogue saved to Firebase — you can edit every page now')}catch(e){toast('Save failed: '+(e.code||e.message))}};
+let newImg=null,rmImg=false;
+function form(p,isNew){newImg=null;rmImg=false;const cs=[...new Set(products().map(x=>x.category))];
+M(`<h3>${isNew?'➕ Add product':'✏️ Edit product'}</h3><label>Product name *</label><input id="en" value="${esc(p.name)}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label>Company / brand</label><input id="ec" value="${esc(p.company)}"></div><div><label>Price (Rs.) *</label><input id="ep" type="number" min="0" value="${p.price||''}"></div></div><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px"><div><label>Category *</label><input id="ek" list="cl" value="${esc(p.category)}"><datalist id="cl">${cs.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div><div><label>Icon</label><input id="ei" value="${esc(p.icon||'')}" maxlength="4"></div><div><label>Page no.</label><input id="eo" type="number" value="${p.order??''}"></div></div>
+<label>Details (one point per line)</label><textarea id="ed" rows="4" placeholder="e.g. 56 inch sweep&#10;Copper winding&#10;2 year warranty">${esc(p.details||'')}</textarea><label>Product picture</label><input id="ef" type="file" accept="image/*"><div id="pv2" style="margin-top:8px;font-size:12px;color:#64748b">${p.hasImg?'A picture is saved. Choose a new one to replace it.':'No picture yet (emoji icon is shown).'}</div>
+<div class="row"><button class="s" style="background:#eef2fb;color:#1e3a8a;border:0" onclick="closeM()">Cancel</button>${isNew?'':`<button class="r" onclick="delP('${p.id}')">Delete</button>`}<button onclick="saveP('${p.id}',${isNew?1:0},${p.hasImg?1:0})">Save</button></div>`);
+$('#ef').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{newImg=await compress(f);rmImg=false;$('#pv2').innerHTML=`<img src="${newImg}" style="max-width:100%;max-height:160px;border-radius:10px"> <button class="r" style="padding:4px 10px;font-size:12px" onclick="newImg=null;this.parentNode.textContent='Picture removed'">remove</button>`}catch(x){toast('Could not read this picture')}}}
+window.editP=async id=>{if(!isAdmin)return;if(!(fbLoaded&&FB.length)){toast('Saving the default catalogue first…');await seed();await new Promise(r=>setTimeout(r,1200))}const p=products().find(x=>x.id==id);if(p)form(p,false)};
+window.addP=()=>form({id:'p'+Date.now().toString(36),name:'',company:'',price:'',category:products()[0]?products()[0].category:'',icon:'📦',details:'',order:(products().reduce((m,x)=>Math.max(m,x.order||0),0)+1),hasImg:false},true);
+window.saveP=async(id,isNew,had)=>{const g=s=>$(s).value.trim(),name=g('#en'),price=+g('#ep'),cat=g('#ek');if(!name||!cat||!(price>=0)||g('#ep')==='')return toast('Name, price and category are required');
+const hasImg=newImg?true:(rmImg?false:!!had),data={id,name,company:g('#ec'),price:Math.round(price),category:cat,icon:g('#ei')||'📦',details:$('#ed').value.trim(),order:+g('#eo')||0,hasImg,updatedAt:Date.now()};
+try{if(!(fbLoaded&&FB.length)&&!isNew)await seed();await setDoc(doc(db,'catalog',id),data);if(newImg){await setDoc(doc(db,'catalogImages',id),{data:newImg});IMG[id]=newImg}closeM();toast('Saved')}catch(e){toast('Save failed: '+(e.code||e.message))}};
+window.delP=id=>{if(!confirm('Delete this product page?'))return;Promise.all([deleteDoc(doc(db,'catalog',id)),deleteDoc(doc(db,'catalogImages',id))]).then(()=>{closeM();toast('Deleted')}).catch(e=>toast('Delete failed: '+(e.code||e.message)))};
+function compress(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);let q=.78,d=c.toDataURL('image/jpeg',q);while(d.length>330000&&q>.4){q-=.1;d=c.toDataURL('image/jpeg',q)}res(d)};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+/* ---- live data ---- */
+let rb;onSnapshot(collection(db,'catalog'),s=>{FB=s.docs.map(d=>d.data());fbLoaded=true;clearTimeout(rb);rb=setTimeout(()=>{top();build(spread?2*cur:cur)},120)},e=>{console.error(e);toast('Showing built-in catalogue ('+(e.code||'offline')+')')});
+/* open a shared product link (#i=id) */
+const hid=(location.hash.match(/i=([^&]+)/)||[])[1];top();build();if(hid){const t=setInterval(()=>{if(pageOf[hid]!=null){clearInterval(t);build(pageOf[hid])}},300);setTimeout(()=>clearInterval(t),5000)}
+</script></body></html>
