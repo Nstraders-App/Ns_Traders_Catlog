@@ -41,17 +41,30 @@ input,select,textarea{font:inherit;padding:10px 12px;border:1.5px solid #dbe5f8;
 <header class="hd"><div class="brand" id="brand"></div><div class="sw"><input id="q" placeholder="🔍 Search product, company, category…" autocomplete="off"><div id="sr"></div></div><div class="ac" id="ac"></div></header>
 <main class="stage"><div id="book" class="book"></div></main>
 <footer class="ft"><button class="s" id="pv">◀</button><div class="lb" id="lb"></div><button class="s" id="nx">▶</button><select id="cat"></select></footer>
-<div id="modal"></div><div id="toast"></div>
+<input type="file" id="rf" accept=".json" style="display:none" onchange="importCat(this.files[0]);this.value=''"><div id="modal"></div><div id="toast"></div>
 <script type="module">
-/* ===================== SETTINGS (this file is a separate website: the NS_Traders product catalogue) ===================== */
-const firebaseConfig={apiKey:"AIzaSyCVl3m92sFLjV4YNIsKKupRGFQXdXL9yV4",authDomain:"ns-traders-ef755.firebaseapp.com",projectId:"ns-traders-ef755",storageBucket:"ns-traders-ef755.firebasestorage.app",messagingSenderId:"554257321932",appId:"1:554257321932:web:b045e8096446a387259769"};
-const DOMAIN='installments.app';                       // admin username becomes username@installments.app (or type the full email)
+/* ===================== SETTINGS (this file is a separate website: the NS_Traders product catalogue) =====================
+   LOCAL MODE (now): while the config below is not filled, products + pictures are saved in THIS browser (localStorage / IndexedDB) and editing is protected by an admin PIN.
+   Use the Backup / Restore buttons to move the catalogue to another device. To switch to Firebase later (shared by everyone):
+   1) Create a NEW Firebase project  2) Authentication > Email/Password > Enable  3) Firestore Database (Standard, Production mode)
+   4) Rules tab: paste the text of catalogue/firestore.rules and Publish  5) Authentication > Add user (your admin email + password)
+   6) Firestore > start collection 'users' > Document ID = that user's UID > fields: role = admin (string), name = Admin (string)
+   7) Authentication > Settings > Authorized domains: add the website domain where you host this file. */
+const firebaseConfig={
+  apiKey:"PASTE_API_KEY",
+  authDomain:"PASTE_PROJECT_ID.firebaseapp.com",
+  projectId:"PASTE_PROJECT_ID",
+  storageBucket:"PASTE_PROJECT_ID.firebasestorage.app",
+  messagingSenderId:"PASTE_SENDER_ID",
+  appId:"PASTE_APP_ID"
+};
+const DOMAIN='installments.app';                       // typing just 'admin' logs in as admin@installments.app; or type the full admin email
 const CONTACT={whatsapp:'',phone:'',address:''};      // optional: whatsapp like 923001234567 enables the "Enquire" button; phone/address appear on the last page
 /* ========================================================================================================================= */
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,initializeFirestore,persistentLocalCache,doc,getDoc,setDoc,deleteDoc,collection,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const app=initializeApp(firebaseConfig),auth=getAuth(app);let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache()})}catch(e){db=getFirestore(app)}
+const ON=!/^PASTE/.test(firebaseConfig.apiKey);let app,auth,db;if(ON){app=initializeApp(firebaseConfig);auth=getAuth(app);try{db=initializeFirestore(app,{localCache:persistentLocalCache()})}catch(e){db=getFirestore(app)}}
 /* ---- built-in catalogue (every product of the installment system, one page each). Used until the admin saves it to Firebase. ---- */
 const DEF=[['Fans and Cooling','🌀','AC/DC Fan 56 inch=15500|Inverter Fan 30 Watt=18500|Pedestal Fan 24 inch=17500|Bracket Fan 18 inch=14500|Bracket Fan AC/DC 18 inch=16500|Mega Bracket Fan 20 inch=16500|Mega Bracket Fan 24 inch=18500|Ceiling Fan=12000|Room Air Cooler=25000|UPS=30000|Solar Panel=60000|Generator=75000'],
 ['Juicers, Blenders and Choppers','🥤','Juicer 3in1 PH770=12500|Juicer 4in1=14500|Blender 2in1=6500|Blender 3in1=7500|Blender Commercial=16500|Food Factory U,B=22500|Chopper Bowl=8500|Chopper 876=13500'],
@@ -68,7 +81,17 @@ const LOGO=w=>`<svg width="${w}" height="${w}" viewBox="0 0 64 64" style="flex-s
 $('#brand').innerHTML=`${LOGO(38)}<div><div class="bw">NS<i>_</i>Traders</div><small>Product Catalogue</small></div>`;
 /* ---- state ---- */
 let FB=[],fbLoaded=false,isAdmin=false,cur=0,N=0,spread=true,P=[],pageProd=[],pageOf={},cats=[],list=[];const IMG={};
-const products=()=>(fbLoaded&&FB.length?FB:DEFAULTS).slice().sort((a,b)=>(a.order??0)-(b.order??0));
+/* ---- local mode (no Firebase yet): products in localStorage, pictures in IndexedDB, admin PIN on this device ---- */
+const LS={get:()=>{try{return JSON.parse(localStorage.getItem('nsCatalog')||'null')}catch(e){return null}},set:v=>localStorage.setItem('nsCatalog',JSON.stringify(v))};
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('nsCat',1);r.onupgradeneeded=()=>r.result.createObjectStore('img');r.onsuccess=()=>res(r.result);r.onerror=rej});
+const idbGet=async id=>{const d=await idb();return new Promise(r=>{const q=d.transaction('img').objectStore('img').get(id);q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)})};
+const idbSet=async(id,v)=>{const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('img','readwrite');v==null?t.objectStore('img').delete(id):t.objectStore('img').put(v,id);t.oncomplete=res;t.onerror=rej})};
+const getImg=id=>ON?getDoc(doc(db,'catalogImages',id)).then(s=>s.exists()?s.data().data:null):idbGet(id);
+let LOC=LS.get();const hasFB=()=>ON?(fbLoaded&&FB.length>0):!!LOC;
+const products=()=>(ON?(fbLoaded&&FB.length?FB:DEFAULTS):(LOC||DEFAULTS)).slice().sort((a,b)=>(a.order??0)-(b.order??0));
+const PIN=()=>localStorage.getItem('nsPin'),LOCALPIN=()=>`<h3>🔐 Admin (this device)</h3><p style="font-size:13px;color:#475569">${PIN()?'Enter your admin PIN to edit the catalogue.':'First time: create an admin PIN (min 4 characters). Remember it — it protects editing on this device.'}</p><input id="lp" type="password" placeholder="PIN" onkeydown="if(event.key=='Enter')doLogin()"><div class="row"><button class="s" style="background:#eef2fb;color:#1e3a8a;border:0" onclick="closeM()">Cancel</button><button onclick="doLogin()">${PIN()?'Unlock':'Set PIN'}</button></div>`;
+const doLoginLocal=()=>{const p=$('#lp').value;if(p.length<4)return toast('PIN: at least 4 characters');if(!PIN())localStorage.setItem('nsPin',p);else if(p!==PIN())return toast('Wrong PIN');sessionStorage.setItem('nsAdmin','1');isAdmin=true;closeM();setTop();build(spread?2*cur:cur);toast('Local mode: changes are saved on this device only')};
+
 /* ---- pages ---- */
 const cover=()=>`<div class="pg cv">${LOGO(Math.round(innerWidth<900?110:130))}<h1>NS<i>_</i>Traders</h1><div class="sub">Product Catalogue</div><div class="sub" style="letter-spacing:.2em">${new Date().getFullYear()}</div><div class="hint">TAP OR SWIPE TO OPEN ›</div></div>`;
 const contents=()=>`<div class="pg ct"><h3>Contents</h3><div style="font-size:.7em;color:var(--m);margin-bottom:.3em">Tap a category to jump</div>${cats.map(c=>`<div class="row" onclick="goPage(${c.page})"><span>${c.icon} ${esc(c.name)}</span><b>${c.n} · p.${c.page+1}</b></div>`).join('')}</div>`;
@@ -94,7 +117,7 @@ function flip(d){const n=Math.max(0,Math.min(maxCur(),cur+d));if(n!=cur){cur=n;a
 window.goPage=p=>{const t=spread?Math.ceil(p/2):p,n=Math.max(0,Math.min(maxCur(),t)),ls=[...document.querySelectorAll('.leaf')];if(n==cur)return;const lo=Math.min(n,cur),hi=Math.max(n,cur);ls.forEach((l,i)=>{if(i>=lo&&i<hi)l.style.transitionDelay=(Math.min(i-lo,14)*45)+'ms,'+(Math.min(i-lo,14)*45+450)+'ms'});cur=n;apply();setTimeout(()=>ls.forEach(l=>l.style.transitionDelay=''),1700)};
 /* ---- images (stored in Firestore as small compressed pictures, loaded only for pages near the one being read) ---- */
 function setImg(id){document.querySelectorAll(`.im[data-id="${id}"]`).forEach(e=>e.innerHTML=`<img src="${IMG[id]}" alt="">`)}
-function loadNear(){const lo=(spread?2*cur-1:cur)-2,hi=(spread?2*cur:cur)+4;for(let i=Math.max(0,lo);i<=Math.min(pageProd.length-1,hi);i++){const p=pageProd[i];if(p&&p.hasImg&&!IMG[p.id]&&!p._l){p._l=1;getDoc(doc(db,'catalogImages',p.id)).then(s=>{if(s.exists()){IMG[p.id]=s.data().data;setImg(p.id)}}).catch(()=>{p._l=0})}}}
+function loadNear(){const lo=(spread?2*cur-1:cur)-2,hi=(spread?2*cur:cur)+4;for(let i=Math.max(0,lo);i<=Math.min(pageProd.length-1,hi);i++){const p=pageProd[i];if(p&&p.hasImg&&!IMG[p.id]&&!p._l){p._l=1;getImg(p.id).then(d=>{if(d){IMG[p.id]=d;setImg(p.id)}}).catch(()=>{p._l=0})}}}
 /* ---- navigation: buttons, keys, swipe, click, search ---- */
 $('#nx').onclick=()=>flip(1);$('#pv').onclick=()=>flip(-1);$('#cat').onchange=e=>{if(e.target.value!=='')goPage(+e.target.value);e.target.value=''};
 addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;if(e.key=='ArrowRight')flip(1);if(e.key=='ArrowLeft')flip(-1)});
@@ -110,27 +133,37 @@ window.shareP=id=>{const p=list.find(x=>x.id==id),t=`${p.name} — Rs. ${fmt(p.p
 window.enq=id=>{const p=list.find(x=>x.id==id);open('https://wa.me/'+CONTACT.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(`Assalam o Alaikum, I want to know about: ${p.name} (Rs. ${fmt(p.price)}) ${link(id)}`),'_blank')};
 /* ---- admin (same admin account as the installment system; only admin can change the catalogue) ---- */
 const M=h=>{const m=$('#modal');m.innerHTML=`<div class="box">${h}</div>`;m.style.display='flex'};window.closeM=()=>{$('#modal').style.display='none'};
-function top(){$('#ac').innerHTML=isAdmin?`<button class="s" onclick="addP()">➕<span class="tx"> Add</span></button>${fbLoaded&&FB.length?'':'<button class="r" onclick="seed()">💾<span class="tx"> Save catalogue</span></button>'}<button class="s" onclick="logout()">🔓<span class="tx"> Logout</span></button>`:`<button class="s" onclick="loginForm()">🔐<span class="tx"> Admin</span></button>`}
-window.loginForm=()=>M(`<h3>🔐 Admin login</h3><label>Username</label><input id="lu" autocomplete="username"><label>Password</label><input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"><div class="row"><button class="s" style="background:#eef2fb;color:#1e3a8a;border:0" onclick="closeM()">Cancel</button><button onclick="doLogin()">Login</button></div>`);
-window.doLogin=async()=>{const u=$('#lu').value.trim(),p=$('#lp').value;if(!u||!p)return toast('Enter username and password');try{const c=await signInWithEmailAndPassword(auth,u.includes('@')?u:u.toLowerCase()+'@'+DOMAIN,p),s=await getDoc(doc(db,'users',c.user.uid));if(!s.exists()||s.data().role!=='admin'){await signOut(auth);return toast('This account is not an admin')}closeM();toast('Admin mode on')}catch(e){toast('Login failed: '+(e.code||e.message))}};
-window.logout=()=>signOut(auth);
-onAuthStateChanged(auth,async u=>{isAdmin=false;if(u){try{const s=await getDoc(doc(db,'users',u.uid));isAdmin=s.exists()&&s.data().role==='admin'}catch(e){}}top();build(spread?2*cur:cur)});
-window.seed=async()=>{if(!isAdmin)return;try{for(let i=0;i<DEFAULTS.length;i+=400){const b=writeBatch(db);DEFAULTS.slice(i,i+400).forEach(p=>b.set(doc(db,'catalog',p.id),{...p,updatedAt:Date.now()}));await b.commit()}toast('Catalogue saved to Firebase — you can edit every page now')}catch(e){toast('Save failed: '+(e.code||e.message))}};
+function setTop(){$('#ac').innerHTML=isAdmin?`${ON?'':'<span class="tx" style="font-size:11px;opacity:.8;align-self:center">Local mode</span>'}<button class="s" onclick="addP()">➕<span class="tx"> Add</span></button>${hasFB()?'':'<button class="r" onclick="seed()">💾<span class="tx"> Save catalogue</span></button>'}<button class="s" onclick="exportCat()">⬇<span class="tx"> Backup</span></button><button class="s" onclick="$('#rf').click()">⬆<span class="tx"> Restore</span></button><button class="s" onclick="logout()">🔓<span class="tx"> Logout</span></button>`:`<button class="s" onclick="loginForm()">🔐<span class="tx"> Admin</span></button>`}
+window.loginForm=()=>!ON?M(LOCALPIN()):M(`<h3>🔐 Admin login</h3><label>Username</label><input id="lu" autocomplete="username"><label>Password</label><input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"><div class="row"><button class="s" style="background:#eef2fb;color:#1e3a8a;border:0" onclick="closeM()">Cancel</button><button onclick="doLogin()">Login</button></div>`);
+const doLoginFB=async()=>{const u=$('#lu').value.trim(),p=$('#lp').value;if(!u||!p)return toast('Enter username and password');try{const c=await signInWithEmailAndPassword(auth,u.includes('@')?u:u.toLowerCase()+'@'+DOMAIN,p),s=await getDoc(doc(db,'users',c.user.uid));if(!s.exists()||s.data().role!=='admin'){await signOut(auth);return toast('This account is not an admin')}closeM();toast('Admin mode on')}catch(e){toast('Login failed: '+(e.code||e.message))}};
+window.doLogin=ON?doLoginFB:doLoginLocal;
+window.logout=ON?()=>signOut(auth):()=>{sessionStorage.removeItem('nsAdmin');isAdmin=false;setTop();build(spread?2*cur:cur)};
+if(ON)onAuthStateChanged(auth,async u=>{isAdmin=false;if(u){try{const s=await getDoc(doc(db,'users',u.uid));isAdmin=s.exists()&&s.data().role==='admin'}catch(e){}}setTop();build(spread?2*cur:cur)});
+window.seed=async()=>{if(!isAdmin)return;if(!ON){LOC=DEFAULTS.map(p=>({...p,updatedAt:Date.now()}));LS.set(LOC);setTop();build(spread?2*cur:cur);return toast('Catalogue saved on this device — you can edit every page now')}try{for(let i=0;i<DEFAULTS.length;i+=400){const b=writeBatch(db);DEFAULTS.slice(i,i+400).forEach(p=>b.set(doc(db,'catalog',p.id),{...p,updatedAt:Date.now()}));await b.commit()}toast('Catalogue saved to Firebase — you can edit every page now')}catch(e){toast('Save failed: '+(e.code||e.message))}};
 let newImg=null,rmImg=false;
 function form(p,isNew){newImg=null;rmImg=false;const cs=[...new Set(products().map(x=>x.category))];
 M(`<h3>${isNew?'➕ Add product':'✏️ Edit product'}</h3><label>Product name *</label><input id="en" value="${esc(p.name)}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label>Company / brand</label><input id="ec" value="${esc(p.company)}"></div><div><label>Price (Rs.) *</label><input id="ep" type="number" min="0" value="${p.price||''}"></div></div><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px"><div><label>Category *</label><input id="ek" list="cl" value="${esc(p.category)}"><datalist id="cl">${cs.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div><div><label>Icon</label><input id="ei" value="${esc(p.icon||'')}" maxlength="4"></div><div><label>Page no.</label><input id="eo" type="number" value="${p.order??''}"></div></div>
-<label>Details (one point per line)</label><textarea id="ed" rows="4" placeholder="e.g. 56 inch sweep&#10;Copper winding&#10;2 year warranty">${esc(p.details||'')}</textarea><label>Product picture</label><input id="ef" type="file" accept="image/*"><div id="pv2" style="margin-top:8px;font-size:12px;color:#64748b">${p.hasImg?'A picture is saved. Choose a new one to replace it.':'No picture yet (emoji icon is shown).'}</div>
+<label>Details (one point per line)</label><textarea id="ed" rows="4" placeholder="e.g. 56 inch sweep&#10;Copper winding&#10;2 year warranty">${esc(p.details||'')}</textarea><label>Product picture</label><input id="ef" type="file" accept="image/*"><div id="pv2" style="margin-top:8px;font-size:12px;color:#64748b">${p.hasImg?'A picture is saved. Choose a new one to replace it. <button class="r" style="padding:4px 10px;font-size:12px" onclick="rmPic()">remove</button>':'No picture yet (emoji icon is shown).'}</div>
 <div class="row"><button class="s" style="background:#eef2fb;color:#1e3a8a;border:0" onclick="closeM()">Cancel</button>${isNew?'':`<button class="r" onclick="delP('${p.id}')">Delete</button>`}<button onclick="saveP('${p.id}',${isNew?1:0},${p.hasImg?1:0})">Save</button></div>`);
-$('#ef').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{newImg=await compress(f);rmImg=false;$('#pv2').innerHTML=`<img src="${newImg}" style="max-width:100%;max-height:160px;border-radius:10px"> <button class="r" style="padding:4px 10px;font-size:12px" onclick="newImg=null;this.parentNode.textContent='Picture removed'">remove</button>`}catch(x){toast('Could not read this picture')}}}
-window.editP=async id=>{if(!isAdmin)return;if(!(fbLoaded&&FB.length)){toast('Saving the default catalogue first…');await seed();await new Promise(r=>setTimeout(r,1200))}const p=products().find(x=>x.id==id);if(p)form(p,false)};
+$('#ef').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{newImg=await compress(f);rmImg=false;$('#pv2').innerHTML=`<img src="${newImg}" style="max-width:100%;max-height:160px;border-radius:10px"> <button class="r" style="padding:4px 10px;font-size:12px" onclick="rmPic()">remove</button>`}catch(x){toast('Could not read this picture')}}}
+window.editP=async id=>{if(!isAdmin)return;if(!hasFB()){toast('Saving the default catalogue first…');await seed();await new Promise(r=>setTimeout(r,ON?1200:50))}const p=products().find(x=>x.id==id);if(p)form(p,false)};
 window.addP=()=>form({id:'p'+Date.now().toString(36),name:'',company:'',price:'',category:products()[0]?products()[0].category:'',icon:'📦',details:'',order:(products().reduce((m,x)=>Math.max(m,x.order||0),0)+1),hasImg:false},true);
 window.saveP=async(id,isNew,had)=>{const g=s=>$(s).value.trim(),name=g('#en'),price=+g('#ep'),cat=g('#ek');if(!name||!cat||!(price>=0)||g('#ep')==='')return toast('Name, price and category are required');
 const hasImg=newImg?true:(rmImg?false:!!had),data={id,name,company:g('#ec'),price:Math.round(price),category:cat,icon:g('#ei')||'📦',details:$('#ed').value.trim(),order:+g('#eo')||0,hasImg,updatedAt:Date.now()};
-try{if(!(fbLoaded&&FB.length)&&!isNew)await seed();await setDoc(doc(db,'catalog',id),data);if(newImg){await setDoc(doc(db,'catalogImages',id),{data:newImg});IMG[id]=newImg}closeM();toast('Saved')}catch(e){toast('Save failed: '+(e.code||e.message))}};
-window.delP=id=>{if(!confirm('Delete this product page?'))return;Promise.all([deleteDoc(doc(db,'catalog',id)),deleteDoc(doc(db,'catalogImages',id))]).then(()=>{closeM();toast('Deleted')}).catch(e=>toast('Delete failed: '+(e.code||e.message)))};
+try{if(!hasFB()&&!isNew)await seed();await putP(data);if(rmImg&&had){await rmImgStore(id);delete IMG[id]}if(newImg){await putImg(id,newImg);IMG[id]=newImg}closeM();toast('Saved');if(!ON){setTop();build(spread?2*cur:cur)}}catch(e){toast('Save failed: '+(e.code||e.message))}};
+window.delP=id=>{if(!confirm('Delete this product page?'))return;if(!ON){LOC=(LOC||[]).filter(x=>x.id!=id);LS.set(LOC);idbSet(id,null).catch(()=>{});closeM();setTop();build(spread?2*cur:cur);return toast('Deleted')}Promise.all([deleteDoc(doc(db,'catalog',id)),deleteDoc(doc(db,'catalogImages',id))]).then(()=>{closeM();toast('Deleted')}).catch(e=>toast('Delete failed: '+(e.code||e.message)))};
+const putP=async data=>{if(ON)return setDoc(doc(db,'catalog',data.id),data);LOC=LOC||DEFAULTS.map(p=>({...p}));const i=LOC.findIndex(x=>x.id==data.id);if(i>=0)LOC[i]=data;else LOC.push(data);LS.set(LOC)};
+const putImg=(id,d)=>ON?setDoc(doc(db,'catalogImages',id),{data:d}):idbSet(id,d),rmImgStore=id=>ON?deleteDoc(doc(db,'catalogImages',id)):idbSet(id,null);
+window.rmPic=()=>{newImg=null;rmImg=true;$('#pv2').textContent='Picture will be removed when you save'};
+window.exportCat=async()=>{const ps=products(),images={};await Promise.all(ps.filter(p=>p.hasImg).map(async p=>{const d=IMG[p.id]||await getImg(p.id);if(d)images[p.id]=d}));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({products:ps,images})],{type:'application/json'}));a.download='NS_Traders_catalogue_backup.json';a.click();toast('Backup downloaded')};
+window.importCat=async f=>{if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.products))throw 0;if(!confirm('Load this backup ('+d.products.length+' products)? It replaces the catalogue on this '+(ON?'Firebase':'device')+'.'))return;
+if(ON){for(let i=0;i<d.products.length;i+=400){const b=writeBatch(db);d.products.slice(i,i+400).forEach(p=>b.set(doc(db,'catalog',p.id),p));await b.commit()}for(const id in d.images||{})await setDoc(doc(db,'catalogImages',id),{data:d.images[id]})}
+else{LOC=d.products;LS.set(LOC);for(const id in d.images||{})await idbSet(id,d.images[id])}
+Object.assign(IMG,d.images||{});toast('Backup loaded');if(!ON){setTop();build(spread?2*cur:cur)}}catch(e){toast('This is not a valid catalogue backup')}};
 function compress(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);let q=.78,d=c.toDataURL('image/jpeg',q);while(d.length>330000&&q>.4){q-=.1;d=c.toDataURL('image/jpeg',q)}res(d)};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
 /* ---- live data ---- */
-let rb;onSnapshot(collection(db,'catalog'),s=>{FB=s.docs.map(d=>d.data());fbLoaded=true;clearTimeout(rb);rb=setTimeout(()=>{top();build(spread?2*cur:cur)},120)},e=>{console.error(e);toast('Showing built-in catalogue ('+(e.code||'offline')+')')});
+if(!ON&&sessionStorage.getItem('nsAdmin'))isAdmin=true;
+let rb;if(ON)onSnapshot(collection(db,'catalog'),s=>{FB=s.docs.map(d=>d.data());fbLoaded=true;clearTimeout(rb);rb=setTimeout(()=>{setTop();build(spread?2*cur:cur)},120)},e=>{console.error(e);toast('Showing built-in catalogue ('+(e.code||'offline')+')')});
 /* open a shared product link (#i=id) */
-const hid=(location.hash.match(/i=([^&]+)/)||[])[1];top();build();if(hid){const t=setInterval(()=>{if(pageOf[hid]!=null){clearInterval(t);build(pageOf[hid])}},300);setTimeout(()=>clearInterval(t),5000)}
+const hid=(location.hash.match(/i=([^&]+)/)||[])[1];setTop();build();if(hid){const t=setInterval(()=>{if(pageOf[hid]!=null){clearInterval(t);build(pageOf[hid])}},300);setTimeout(()=>clearInterval(t),5000)}
 </script></body></html>
