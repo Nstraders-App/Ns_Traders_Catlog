@@ -44,27 +44,30 @@ input,select,textarea{font:inherit;padding:10px 12px;border:1.5px solid #dbe5f8;
 <input type="file" id="rf" accept=".json" style="display:none" onchange="importCat(this.files[0]);this.value=''"><div id="modal"></div><div id="toast"></div>
 <script type="module">
 /* ===================== SETTINGS (this file is a separate website: the NS_Traders product catalogue) =====================
-   LOCAL MODE (now): while the config below is not filled, products + pictures are saved in THIS browser (localStorage / IndexedDB) and editing is protected by an admin PIN.
-   Use the Backup / Restore buttons to move the catalogue to another device. To switch to Firebase later (shared by everyone):
+   CONNECTED to its own Firebase project (catlog-5edff): products + pictures are shared with everyone, only the Firebase admin can edit.
+   (If the config below is ever left as PASTE_..., the page falls back to LOCAL MODE: data in this browser + an admin PIN.)
+   One-time Firebase setup for this project:
    1) Create a NEW Firebase project  2) Authentication > Email/Password > Enable  3) Firestore Database (Standard, Production mode)
    4) Rules tab: paste the text of catalogue/firestore.rules and Publish  5) Authentication > Add user (your admin email + password)
    6) Firestore > start collection 'users' > Document ID = that user's UID > fields: role = admin (string), name = Admin (string)
    7) Authentication > Settings > Authorized domains: add the website domain where you host this file. */
 const firebaseConfig={
-  apiKey:"PASTE_API_KEY",
-  authDomain:"PASTE_PROJECT_ID.firebaseapp.com",
-  projectId:"PASTE_PROJECT_ID",
-  storageBucket:"PASTE_PROJECT_ID.firebasestorage.app",
-  messagingSenderId:"PASTE_SENDER_ID",
-  appId:"PASTE_APP_ID"
+  apiKey:"AIzaSyB--6zeaI-JvyV-LEFrl-J5WXehs7ISkws",
+  authDomain:"catlog-5edff.firebaseapp.com",
+  projectId:"catlog-5edff",
+  storageBucket:"catlog-5edff.firebasestorage.app",
+  messagingSenderId:"7206579418",
+  appId:"1:7206579418:web:409d1ed07082701bf8c9e3",
+  measurementId:"G-BQLJCYF3EK"
 };
 const DOMAIN='installments.app';                       // typing just 'admin' logs in as admin@installments.app; or type the full admin email
 const CONTACT={whatsapp:'',phone:'',address:''};      // optional: whatsapp like 923001234567 enables the "Enquire" button; phone/address appear on the last page
 /* ========================================================================================================================= */
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAnalytics} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,initializeFirestore,persistentLocalCache,doc,getDoc,setDoc,deleteDoc,collection,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const ON=!/^PASTE/.test(firebaseConfig.apiKey);let app,auth,db;if(ON){app=initializeApp(firebaseConfig);auth=getAuth(app);try{db=initializeFirestore(app,{localCache:persistentLocalCache()})}catch(e){db=getFirestore(app)}}
+const ON=!/^PASTE/.test(firebaseConfig.apiKey);let app,auth,db;if(ON){app=initializeApp(firebaseConfig);try{getAnalytics(app)}catch(e){}auth=getAuth(app);try{db=initializeFirestore(app,{localCache:persistentLocalCache()})}catch(e){db=getFirestore(app)}}
 /* ---- built-in catalogue (every product of the installment system, one page each). Used until the admin saves it to Firebase. ---- */
 const DEF=[['Fans and Cooling','🌀','AC/DC Fan 56 inch=15500|Inverter Fan 30 Watt=18500|Pedestal Fan 24 inch=17500|Bracket Fan 18 inch=14500|Bracket Fan AC/DC 18 inch=16500|Mega Bracket Fan 20 inch=16500|Mega Bracket Fan 24 inch=18500|Ceiling Fan=12000|Room Air Cooler=25000|UPS=30000|Solar Panel=60000|Generator=75000'],
 ['Juicers, Blenders and Choppers','🥤','Juicer 3in1 PH770=12500|Juicer 4in1=14500|Blender 2in1=6500|Blender 3in1=7500|Blender Commercial=16500|Food Factory U,B=22500|Chopper Bowl=8500|Chopper 876=13500'],
